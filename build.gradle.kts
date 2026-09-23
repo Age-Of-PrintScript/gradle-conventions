@@ -26,7 +26,9 @@ publishing {
             url = uri("https://maven.pkg.github.com/Age-Of-PrintScript/gradle-conventions")
             credentials {
                 username = System.getenv("GITHUB_ACTOR") ?: project.findProperty("gpr.user")?.toString()
-                password = System.getenv("GITHUB_TOKEN") ?: project.findProperty("gpr.token")?.toString()
+                password = System.getenv("GITHUB_TOKEN")
+                    ?: project.findProperty("gpr.token")?.toString()
+                    ?: project.findProperty("gpr.key")?.toString()
             }
         }
     }

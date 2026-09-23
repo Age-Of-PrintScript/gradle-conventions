@@ -25,6 +25,18 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
+// Aislar el classpath de Detekt a Kotlin 2.0.21 para evitar conflictos de versiones
+configurations.matching { it.name in listOf("detekt", "detektPlugins") }.configureEach {
+    resolutionStrategy {
+        force(
+            "org.jetbrains.kotlin:kotlin-compiler-embeddable:2.0.21",
+            "org.jetbrains.kotlin:kotlin-reflect:2.0.21",
+            "org.jetbrains.kotlin:kotlin-stdlib:2.0.21",
+        )
+    }
+}
+
+
 detekt {
     buildUponDefaultConfig = true
     val customConfig = files("$rootDir/config/detekt/detekt.yml").filter { it.exists() }

@@ -37,13 +37,35 @@ configurations.matching { it.name in listOf("detekt", "detektPlugins") }.configu
 }
 
 
+val defaultDetektConfigFile = layout.buildDirectory.file("detekt/default-detekt-config.yml")
+val extractDetektConfig = tasks.register("extractDetektConfig") {
+    outputs.file(defaultDetektConfigFile)
+    doLast {
+        val stream = javaClass.classLoader.getResourceAsStream("default-detekt-config.yml")
+        if (stream != null) {
+            val file = defaultDetektConfigFile.get().asFile
+            file.parentFile.mkdirs()
+            file.outputStream().use { stream.copyTo(it) }
+        }
+    }
+}
+
 detekt {
     buildUponDefaultConfig = true
     val customConfig = files("$rootDir/config/detekt/detekt.yml").filter { it.exists() }
     if (!customConfig.isEmpty) {
         config.setFrom(customConfig)
+    } else {
+        config.setFrom(files(defaultDetektConfigFile))
     }
     autoCorrect = true
+}
+
+tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+    val customConfig = files("$rootDir/config/detekt/detekt.yml").filter { it.exists() }
+    if (customConfig.isEmpty) {
+        dependsOn(extractDetektConfig)
+    }
 }
 
 configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
